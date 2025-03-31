@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Saver</title>
+    <style>
+        body {
+            width: 300px;
+            padding: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    
+        .input-group {
+            margin-bottom: 16px;
+        }
+    
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+        }
+    
+        button {
+            width: 100%;
+            padding: 8px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-group">
+        <label for="apiKey">Google Gemini API Key:</label>
+        <input type="password" id="apiKey" placeholder="Enter your API key">
+    </div>
+    <button id="saveBtn">Save</button>
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+/* Optimize Button Styling */
+.prompt-slim-button {
+    position: absolute;
+    bottom: 10px;
+    /* Adjust as needed */
+    right: 10px;
+    /* Adjust as needed */
+    padding: 4px 8px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: #fff;
+    background-color: #007bff;
+    /* Blue, change as desired */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 1000;
+    /* Ensure it's above most elements */
+    opacity: 0.8;
+    transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    /* Readable font stack */
+}
+
+.prompt-slim-button:hover {
+    opacity: 1;
+    background-color: #0056b3;
+    /* Darker blue on hover */
+}
+
+.prompt-slim-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Feedback Message Styling */
+.prompt-slim-feedback {
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+    /* Space between message and input */
+    /* Position relative to the input's container usually */
+    display: inline-block;
+    /* Or block depending on desired layout */
+    max-width: 90%;
+    /* Prevent overly long messages */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    z-index: 999;
+    /* Below button if overlapping */
+    animation: prompt-slim-fade-in 0.3s ease-out;
+}
+
+.prompt-slim-feedback.success {
+    background-color: #e6ffed;
+    color: #006400;
+    border: 1px solid #c8e6c9;
+}
+
+.prompt-slim-feedback.warning {
+    background-color: #fffbe6;
+    color: #8a6d3b;
+    border: 1px solid #ffeeba;
+}
+
+.prompt-slim-feedback.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@keyframes prompt-slim-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
