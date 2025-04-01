@@ -1,0 +1,113 @@
+.llm-optimizer-popup {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 320px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: all 0.3s ease;
+}
+
+.llm-optimizer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #eee;
+}
+
+.llm-optimizer-header h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.llm-optimizer-minimize {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+    padding: 0 4px;
+}
+
+.llm-optimizer-content {
+    padding: 16px;
+}
+
+.llm-optimizer-input,
+.llm-optimizer-output {
+    width: 100%;
+    min-height: 100px;
+    padding: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-size: 14px;
+}
+
+.llm-optimizer-output {
+    background: #f8f9fa;
+}
+
+.llm-optimizer-button,
+.llm-optimizer-copy {
+    width: 100%;
+    padding: 8px 16px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 12px;
+    transition: background 0.2s;
+}
+
+.llm-optimizer-button:hover,
+.llm-optimizer-copy:hover {
+    background: #45a049;
+}
+
+.llm-optimizer-button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.llm-optimizer-status {
+    font-size: 12px;
+    text-align: center;
+    min-height: 20px;
+}
+
+.llm-optimizer-status.error {
+    color: #dc3545;
+}
+
+.llm-optimizer-status.success {
+    color: #28a745;
+}
+
+.llm-optimizer-popup.minimized .llm-optimizer-content {
+    display: none;
+}
+
+.llm-optimizer-popup.minimized {
+    width: auto;
+    transform: translateY(-50%);
+}
+
+.llm-optimizer-output-container {
+    position: relative;
+}
+
+.llm-optimizer-copy {
+    margin-top: 8px;
+}

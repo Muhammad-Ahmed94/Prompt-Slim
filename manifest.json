@@ -1,37 +1,35 @@
 {
   "manifest_version": 3,
-  "name": "Prompt Slim",
-  "version": "1.0",
-  "description": "Optimizes user prompts on LLM websites using Google Gemini.",
+  "name": "LLM Input Optimizer",
+  "version": "1.0.0",
+  "description": "Optimize your prompts for LLM platforms",
   "permissions": [
-    "storage",
-    "scripting"
+    "activeTab",
+    "storage"
   ],
   "host_permissions": [
-    "*://chat.openai.com/*",
-    "*://gemini.google.com/*",
-    "*://claude.ai/*"
+    "https://chat.openai.com/*",
+    "https://gemini.google.com/*",
+    "https://claude.ai/*",
+    "https://generativelanguage.googleapis.com/*"
   ],
-  "background": {
-    "service_worker": "js/background.js"
-  },
   "content_scripts": [
     {
       "matches": [
-        "*://chat.openai.com/*",
-        "*://gemini.google.com/*",
-        "*://claude.ai/*"
+        "https://chat.openai.com/*",
+        "https://gemini.google.com/*",
+        "https://claude.ai/*"
       ],
-      "js": ["js/content.js"],
-      "css": ["css/style.css"]
+      "js": ["content.js"],
+      "css": ["styles.css"]
     }
   ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
   "action": {
-    "default_title": "Prompt Slim"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   }
 }
