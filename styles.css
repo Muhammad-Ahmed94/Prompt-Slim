@@ -1,113 +1,143 @@
-.llm-optimizer-popup {
+/* Popup styling */
+.prompt-optimizer-popup {
     position: fixed;
-    right: 20px;
     top: 50%;
+    right: 0;
     transform: translateY(-50%);
-    width: 320px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 350px;
+    background-color: white;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px 0 0 8px;
     z-index: 9999;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
-.llm-optimizer-header {
+.prompt-optimizer-popup.prompt-optimizer-hidden {
+    transform: translate(100%, -50%);
+}
+
+.prompt-optimizer-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background: #f8f9fa;
-    border-radius: 8px 8px 0 0;
-    border-bottom: 1px solid #eee;
+    padding: 12px 15px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 0 0 0;
 }
 
-.llm-optimizer-header h3 {
+.prompt-optimizer-header h3 {
     margin: 0;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 600;
     color: #333;
 }
 
-.llm-optimizer-minimize {
+.prompt-optimizer-close-btn {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     color: #666;
-    padding: 0 4px;
 }
 
-.llm-optimizer-content {
-    padding: 16px;
+.prompt-optimizer-content {
+    padding: 15px;
 }
 
-.llm-optimizer-input,
-.llm-optimizer-output {
+.prompt-optimizer-content textarea {
     width: 100%;
-    min-height: 100px;
-    padding: 8px;
-    margin-bottom: 12px;
+    padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     resize: vertical;
+    font-family: inherit;
     font-size: 14px;
+    color: #000;
+    margin-bottom: 10px;
+    box-sizing: border-box;
 }
 
-.llm-optimizer-output {
-    background: #f8f9fa;
-}
-
-.llm-optimizer-button,
-.llm-optimizer-copy {
-    width: 100%;
-    padding: 8px 16px;
-    background: #4CAF50;
+.prompt-optimizer-btn {
+    background-color: #4b85e8;
     color: white;
     border: none;
+    padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    margin-bottom: 12px;
-    transition: background 0.2s;
+    font-weight: 500;
+    width: 100%;
+    margin-bottom: 15px;
+    transition: background-color 0.2s;
 }
 
-.llm-optimizer-button:hover,
-.llm-optimizer-copy:hover {
-    background: #45a049;
+.prompt-optimizer-btn:hover {
+    background-color: #3b6ac8;
 }
 
-.llm-optimizer-button:disabled {
-    background: #cccccc;
+.prompt-optimizer-btn:disabled {
+    background-color: #a0a0a0;
     cursor: not-allowed;
 }
 
-.llm-optimizer-status {
-    font-size: 12px;
-    text-align: center;
-    min-height: 20px;
+.prompt-optimizer-result-container {
+    margin-top: 15px;
 }
 
-.llm-optimizer-status.error {
-    color: #dc3545;
-}
-
-.llm-optimizer-status.success {
-    color: #28a745;
-}
-
-.llm-optimizer-popup.minimized .llm-optimizer-content {
+/* Loading indicator */
+.prompt-optimizer-loading {
     display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
 }
 
-.llm-optimizer-popup.minimized {
-    width: auto;
+.spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4b85e8;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 8px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toggle button */
+.prompt-optimizer-toggle-btn {
+    position: fixed;
+    top: 50%;
+    right: 0;
     transform: translateY(-50%);
+    background-color: #4b85e8;
+    color: white;
+    border: none;
+    border-radius: 8px 0 0 8px;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 9998;
+    font-size: 18px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
 }
 
-.llm-optimizer-output-container {
-    position: relative;
+.prompt-optimizer-toggle-btn:hover {
+    background-color: #3b6ac8;
 }
 
-.llm-optimizer-copy {
-    margin-top: 8px;
+/* When popup is visible, hide toggle button */
+.prompt-optimizer-popup:not(.prompt-optimizer-hidden)+.prompt-optimizer-toggle-btn {
+    right: -50px;
 }

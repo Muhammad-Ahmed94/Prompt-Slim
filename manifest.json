@@ -1,35 +1,32 @@
 {
   "manifest_version": 3,
-  "name": "LLM Input Optimizer",
-  "version": "1.0.0",
-  "description": "Optimize your prompts for LLM platforms",
-  "permissions": [
-    "activeTab",
-    "storage"
-  ],
+  "name": "Prompt Optimizer",
+  "version": "1.0",
+  "description": "Optimize prompts for LLM platforms using Gemini API",
+  "permissions": ["activeTab", "scripting"],
   "host_permissions": [
     "https://chat.openai.com/*",
-    "https://gemini.google.com/*",
-    "https://claude.ai/*",
-    "https://generativelanguage.googleapis.com/*"
+    "https://google.gemini.com/*", 
+    "https://claude.ai/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [
         "https://chat.openai.com/*",
-        "https://gemini.google.com/*",
+        "https://google.gemini.com/*", 
         "https://claude.ai/*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"]
     }
   ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+  "web_accessible_resources": [
+    {
+      "resources": ["env.js"],
+      "matches": ["<all_urls>"]
     }
-  }
+  ]
 }
