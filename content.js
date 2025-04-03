@@ -129,6 +129,8 @@ async function optimizePrompt(originalPrompt) {
     throw new Error("API key not loaded");
   }
 
+  console.log("Starting API request with key length:", GEMINI_API_KEY.length);
+
   const apiEndpoint =
     "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 
@@ -154,6 +156,9 @@ Return only the optimized prompt without any explanation or additional text.`,
   };
 
   try {
+    console.log("Making API request to:", apiEndpoint);
+    console.log("Request payload:", JSON.stringify(promptData, null, 2));
+
     const response = await fetch(`${apiEndpoint}?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
@@ -162,14 +167,39 @@ Return only the optimized prompt without any explanation or additional text.`,
       body: JSON.stringify(promptData),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
+    console.log("API response status:", response.status);
+
+    const responseText = await response.text();
+    console.log("Raw API response:", responseText);
+
+    // Try to parse the response as JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error("Failed to parse response as JSON:", parseError);
       throw new Error(
-        `API error: ${errorData.error?.message || response.statusText}`
+        `API returned invalid JSON: ${responseText.substring(0, 100)}...`
       );
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      console.error("API error details:", data);
+      const errorMsg = data.error?.message || response.statusText;
+
+      // Check for API key issues
+      if (
+        errorMsg.includes("API key") ||
+        response.status === 403 ||
+        response.status === 401
+      ) {
+        throw new Error(
+          "API key invalid or unauthorized. Please check your API key."
+        );
+      } else {
+        throw new Error(`API error: ${errorMsg}`);
+      }
+    }
 
     // Extract the optimized prompt from the response
     if (data.candidates && data.candidates[0] && data.candidates[0].content) {
@@ -177,6 +207,7 @@ Return only the optimized prompt without any explanation or additional text.`,
       // Clean up the response (remove quotes if present)
       return optimizedText.replace(/^["'](.*)["']$/s, "$1").trim();
     } else {
+      console.error("Unexpected API response structure:", data);
       throw new Error("Unexpected API response format");
     }
   } catch (error) {

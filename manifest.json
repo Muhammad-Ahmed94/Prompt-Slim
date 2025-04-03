@@ -3,11 +3,12 @@
   "name": "Prompt Optimizer",
   "version": "1.0",
   "description": "Optimize prompts for LLM platforms using Gemini API",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://chat.openai.com/*",
     "https://google.gemini.com/*", 
-    "https://claude.ai/*"
+    "https://claude.ai/*",
+    "https://generativelanguage.googleapis.com/*"
   ],
   "background": {
     "service_worker": "background.js"
