@@ -86,6 +86,13 @@
     margin-top: 15px;
 }
 
+.prompt-optimizer-model-info {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
 /* Loading indicator */
 .prompt-optimizer-loading {
     display: none;
