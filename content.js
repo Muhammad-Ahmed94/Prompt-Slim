@@ -1,25 +1,39 @@
-// Variable to store API key and model
+// Variable to store API key
 let GEMINI_API_KEY;
-let CURRENT_MODEL;
 
-// Function to load API key and model from Chrome storage
-async function loadApiKeyAndModel() {
+// Function to load API key from env.js
+// Function to load API key from env.js
+async function loadApiKey() {
   try {
-    const result = await chrome.storage.sync.get([
-      "geminiApiKey",
-      "validatedModelName",
-    ]);
-    if (result.geminiApiKey) {
-      GEMINI_API_KEY = result.geminiApiKey;
-      CURRENT_MODEL = result.validatedModelName || "gemini-pro"; // Default to gemini-pro if not set
-      console.log(`Loaded model: ${CURRENT_MODEL}`);
+    console.log("Attempting to load API key from env.js");
+    const url = chrome.runtime.getURL('env.js');
+    console.log("Env.js URL:", url);
+    
+    const response = await fetch(url);
+    console.log("Fetch response status:", response.status);
+    
+    if (!response.ok) {
+      console.error("Failed to fetch env.js:", response.statusText);
+      return false;
+    }
+    
+    const text = await response.text();
+    console.log("Env.js content length:", text.length);
+    console.log("First few characters:", text.substring(0, 30));
+    
+    // Extract API key using regex to avoid eval
+    const match = text.match(/GEMINI_API_KEY\s*=\s*["']([^"']*)["']/);
+    
+    if (match && match[1]) {
+      console.log("API key found, length:", match[1].length);
+      GEMINI_API_KEY = match[1];
       return true;
     } else {
-      console.log("API key not found in storage");
+      console.error('API key pattern not found in env.js');
       return false;
     }
   } catch (error) {
-    console.error("Error loading API key:", error);
+    console.error('Error loading API key:', error);
     return false;
   }
 }
@@ -54,7 +68,6 @@ function createPopup() {
         ></textarea>
         <button id="copyBtn" class="prompt-optimizer-btn">Copy to Clipboard</button>
       </div>
-      <div id="modelInfo" class="prompt-optimizer-model-info"></div>
     </div>
   `;
 
@@ -78,9 +91,9 @@ function createPopup() {
 
     // Check if API key is loaded
     if (!GEMINI_API_KEY) {
-      const success = await loadApiKeyAndModel();
+      const success = await loadApiKey();
       if (!success) {
-        alert("Please set your Gemini API key in the extension popup");
+        alert("Could not load API key. Please check the env.js file.");
         return;
       }
     }
@@ -94,7 +107,7 @@ function createPopup() {
       document.getElementById("optimizedPrompt").value = optimizedPrompt;
     } catch (error) {
       console.error("Error optimizing prompt:", error);
-      alert(`Error optimizing prompt: ${error.message}`);
+      alert("Error optimizing prompt. Please try again.");
     } finally {
       // Hide loading indicator
       document.getElementById("loadingIndicator").style.display = "none";
@@ -133,8 +146,9 @@ async function optimizePrompt(originalPrompt) {
     throw new Error("API key not loaded");
   }
 
-  // Use the stored model name for the API endpoint
-  const apiEndpoint = `https://generativelanguage.googleapis.com/v1/models/${CURRENT_MODEL}:generateContent`;
+  // Updated endpoint to use Gemini 2.0 Flash-Lite model
+  const apiEndpoint =
+    "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent";
 
   const promptData = {
     contents: [
@@ -158,10 +172,6 @@ Return only the optimized prompt without any explanation or additional text.`,
   };
 
   try {
-    console.log(
-      `Making API request to: ${apiEndpoint} using model ${CURRENT_MODEL}`
-    );
-
     const response = await fetch(`${apiEndpoint}?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
@@ -170,43 +180,14 @@ Return only the optimized prompt without any explanation or additional text.`,
       body: JSON.stringify(promptData),
     });
 
-    console.log("API response status:", response.status);
-
-    const responseText = await response.text();
-    console.log("Raw API response:", responseText);
-
-    // Try to parse the response as JSON
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error("Failed to parse response as JSON:", parseError);
+    if (!response.ok) {
+      const errorData = await response.json();
       throw new Error(
-        `API returned invalid JSON: ${responseText.substring(0, 100)}...`
+        `API error: ${errorData.error?.message || response.statusText}`
       );
     }
 
-    if (!response.ok) {
-      console.error("API error details:", data);
-      const errorMsg = data.error?.message || response.statusText;
-
-      // Check for API key issues
-      if (
-        errorMsg.includes("API key") ||
-        response.status === 403 ||
-        response.status === 401
-      ) {
-        throw new Error(
-          "API key invalid or unauthorized. Please check your API key."
-        );
-      } else if (errorMsg.includes("model") || errorMsg.includes("not found")) {
-        // If it's a model error, try to get a valid model and retry
-        await findValidModel();
-        throw new Error(`Model error: ${errorMsg}. Please try again.`);
-      } else {
-        throw new Error(`API error: ${errorMsg}`);
-      }
-    }
+    const data = await response.json();
 
     // Extract the optimized prompt from the response
     if (data.candidates && data.candidates[0] && data.candidates[0].content) {
@@ -214,7 +195,6 @@ Return only the optimized prompt without any explanation or additional text.`,
       // Clean up the response (remove quotes if present)
       return optimizedText.replace(/^["'](.*)["']$/s, "$1").trim();
     } else {
-      console.error("Unexpected API response structure:", data);
       throw new Error("Unexpected API response format");
     }
   } catch (error) {
@@ -223,64 +203,10 @@ Return only the optimized prompt without any explanation or additional text.`,
   }
 }
 
-// Function to find a valid model that supports generateContent
-async function findValidModel() {
-  try {
-    const listModelsEndpoint =
-      "https://generativelanguage.googleapis.com/v1/models";
-    const response = await fetch(`${listModelsEndpoint}?key=${GEMINI_API_KEY}`);
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Available models:", data);
-
-      // Find models that support generateContent
-      if (data.models && Array.isArray(data.models)) {
-        const validModels = data.models.filter(
-          (model) =>
-            model.supportedGenerationMethods &&
-            model.supportedGenerationMethods.includes("generateContent")
-        );
-
-        console.log("Models supporting generateContent:", validModels);
-
-        if (validModels.length > 0) {
-          // Use the first valid model
-          CURRENT_MODEL = validModels[0].name;
-
-          // Store it for future use
-          await chrome.storage.sync.set({
-            validatedModelName: CURRENT_MODEL,
-            modelDisplayName: validModels[0].displayName || CURRENT_MODEL,
-          });
-
-          console.log(`Updated to valid model: ${CURRENT_MODEL}`);
-
-          // Update the UI with model info
-          const modelInfo = document.getElementById("modelInfo");
-          if (modelInfo) {
-            modelInfo.textContent = `Using model: ${
-              validModels[0].displayName || CURRENT_MODEL
-            }`;
-          }
-
-          return true;
-        }
-      }
-    } else {
-      console.error("Failed to list models:", await response.text());
-    }
-    return false;
-  } catch (error) {
-    console.error("Error finding valid model:", error);
-    return false;
-  }
-}
-
 // Initialize extension
 (async function init() {
-  // Load API key and model
-  await loadApiKeyAndModel();
+  // Load API key
+  await loadApiKey();
 
   // Create popup UI
   createPopup();
@@ -289,15 +215,4 @@ async function findValidModel() {
   document
     .querySelector(".prompt-optimizer-popup")
     .classList.add("prompt-optimizer-hidden");
-
-  // Display current model info
-  const modelInfo = document.getElementById("modelInfo");
-  if (modelInfo && CURRENT_MODEL) {
-    const result = await chrome.storage.sync.get(["modelDisplayName"]);
-    if (result.modelDisplayName) {
-      modelInfo.textContent = `Using model: ${result.modelDisplayName}`;
-    } else {
-      modelInfo.textContent = `Using model: ${CURRENT_MODEL}`;
-    }
-  }
 })();
