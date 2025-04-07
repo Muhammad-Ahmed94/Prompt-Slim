@@ -1,39 +1,26 @@
 // Variable to store API key
 let GEMINI_API_KEY;
 
-// Function to load API key from env.js
-// Function to load API key from env.js
+// Function to load API key from Chrome storage
 async function loadApiKey() {
   try {
-    console.log("Attempting to load API key from env.js");
-    const url = chrome.runtime.getURL('env.js');
-    console.log("Env.js URL:", url);
-    
-    const response = await fetch(url);
-    console.log("Fetch response status:", response.status);
-    
-    if (!response.ok) {
-      console.error("Failed to fetch env.js:", response.statusText);
-      return false;
-    }
-    
-    const text = await response.text();
-    console.log("Env.js content length:", text.length);
-    console.log("First few characters:", text.substring(0, 30));
-    
-    // Extract API key using regex to avoid eval
-    const match = text.match(/GEMINI_API_KEY\s*=\s*["']([^"']*)["']/);
-    
-    if (match && match[1]) {
-      console.log("API key found, length:", match[1].length);
-      GEMINI_API_KEY = match[1];
+    console.log("Attempting to load API key from Chrome storage");
+
+    const result = await chrome.storage.sync.get(["geminiApiKey"]);
+
+    if (result.geminiApiKey) {
+      console.log(
+        "API key found in storage, length:",
+        result.geminiApiKey.length
+      );
+      GEMINI_API_KEY = result.geminiApiKey;
       return true;
     } else {
-      console.error('API key pattern not found in env.js');
+      console.error("API key not found in Chrome storage");
       return false;
     }
   } catch (error) {
-    console.error('Error loading API key:', error);
+    console.error("Error loading API key:", error);
     return false;
   }
 }
@@ -93,7 +80,9 @@ function createPopup() {
     if (!GEMINI_API_KEY) {
       const success = await loadApiKey();
       if (!success) {
-        alert("Could not load API key. Please check the env.js file.");
+        alert(
+          "API key not found. Please set your Gemini API key in the extension popup."
+        );
         return;
       }
     }
@@ -107,7 +96,7 @@ function createPopup() {
       document.getElementById("optimizedPrompt").value = optimizedPrompt;
     } catch (error) {
       console.error("Error optimizing prompt:", error);
-      alert("Error optimizing prompt. Please try again.");
+      alert("Error optimizing prompt: " + error.message);
     } finally {
       // Hide loading indicator
       document.getElementById("loadingIndicator").style.display = "none";
@@ -141,7 +130,7 @@ function createPopup() {
 }
 
 // Function to optimize prompt using Gemini API
-async function optimizePrompt(originalPrompt) {
+async function optimizePrompt(originalPrompt, retryCount = 0, maxRetries = 3) {
   if (!GEMINI_API_KEY) {
     throw new Error("API key not loaded");
   }
@@ -182,21 +171,27 @@ Return only the optimized prompt without any explanation or additional text.`,
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(
-        `API error: ${errorData.error?.message || response.statusText}`
-      );
+      const errorMessage = errorData.error?.message || response.statusText;
+
+      // Check if it's an overload error and we haven't exceeded max retries
+      if (errorMessage.includes("overloaded") && retryCount < maxRetries) {
+        // Calculate delay with exponential backoff (1s, 2s, 4s, etc.)
+        const delay = Math.pow(2, retryCount) * 1000;
+
+        // Show retry message to user
+        console.log(`API is busy. Retrying in ${delay / 1000} seconds...`);
+
+        // Wait for the delay
+        await new Promise((resolve) => setTimeout(resolve, delay));
+
+        // Retry with incremented retry count
+        return optimizePrompt(originalPrompt, retryCount + 1, maxRetries);
+      }
+
+      throw new Error(`API error: ${errorMessage}`);
     }
 
-    const data = await response.json();
-
-    // Extract the optimized prompt from the response
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      const optimizedText = data.candidates[0].content.parts[0].text;
-      // Clean up the response (remove quotes if present)
-      return optimizedText.replace(/^["'](.*)["']$/s, "$1").trim();
-    } else {
-      throw new Error("Unexpected API response format");
-    }
+    // Rest of function for processing successful response...
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw error;
